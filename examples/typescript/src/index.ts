@@ -9,6 +9,7 @@ const resetButton = document.getElementById("resetButton") as HTMLButtonElement;
 const consoleStartButton = document.getElementById("consoleStartButton") as HTMLButtonElement;
 const consoleStopButton = document.getElementById("consoleStopButton") as HTMLButtonElement;
 const eraseButton = document.getElementById("eraseButton") as HTMLButtonElement;
+const disconnectGroup = document.getElementById("disconnectGroup");
 const addFileButton = document.getElementById("addFile") as HTMLButtonElement;
 const programButton = document.getElementById("programButton");
 const filesDiv = document.getElementById("files");
@@ -59,9 +60,7 @@ let transport: Transport;
 let chip: string = null;
 let esploader: ESPLoader;
 
-disconnectButton.classList.add("hidden");
 traceButton.classList.add("hidden");
-eraseButton.classList.add("hidden");
 consoleStopButton.classList.add("hidden");
 resetButton.classList.add("hidden");
 filesDiv.classList.add("hidden");
@@ -209,8 +208,7 @@ connectButton.onclick = async () => {
     lblConnTo.classList.remove("hidden");
     connectButton.classList.add("hidden");
     traceButton.classList.remove("hidden");
-    disconnectButton.classList.remove("hidden");
-    eraseButton.classList.remove("hidden");
+    disconnectGroup.classList.remove("hidden");
     filesDiv.classList.remove("hidden");
     flashSettingsDiv.classList.remove("hidden");
     programBtnWrap.classList.remove("hidden");
@@ -326,9 +324,8 @@ disconnectButton.onclick = async () => {
   baudrateGroup.classList.remove("hidden");
   consoleBaudGroup.classList.remove("hidden");
   connectButton.classList.remove("hidden");
-  disconnectButton.classList.add("hidden");
+  disconnectGroup.classList.add("hidden");
   traceButton.classList.add("hidden");
-  eraseButton.classList.add("hidden");
   lblConnTo.classList.add("hidden");
   filesDiv.classList.add("hidden");
   flashSettingsDiv.classList.add("hidden");

@@ -540,7 +540,7 @@
                         <button class="btn-primary" type="button" id="connectButton" data-i18n-value="program.connect">连接</button>
                         <button class="btn-outline-accent" type="button" id="copyTraceButton" data-i18n-value="program.copyTrace">复制日志</button>
                     </div>
-                    <div class="btn-group">
+                    <div class="btn-group hidden" id="disconnectGroup">
                         <button class="btn-warning" type="button" id="disconnectButton" data-i18n-value="program.disconnect">断开连接</button>
                         <button class="btn-danger" type="button" id="eraseButton" data-i18n-value="program.eraseFlash">擦除 Flash</button>
                     </div>
@@ -603,7 +603,6 @@
                         </button>
                     </div>
 
-                    <output id="list"></output>
                 </div>
 
                 <!-- Console Panel -->
@@ -615,7 +614,7 @@
 
                     <label class="hidden chip-info" id="lblConsoleFor" data-i18n="console.connected">已连接设备：</label>
 
-                    <div class="grid-2-col">
+                    <div class="grid-3-col">
                         <div class="input-group" id="consoleBaudGroup">
                             <label for="consoleBaudrates" id="lblConsoleBaudrate" data-i18n="console.baudrate">波特率</label>
                             <select id="consoleBaudrates">
@@ -627,11 +626,10 @@
                             <label for="reconnectDelay" id="lblReconnectDelay" data-i18n="console.reconnectDelay">重连延迟(ms)</label>
                             <input type="number" id="reconnectDelay" value="1000" min="100" max="10000" step="100" />
                         </div>
-                    </div>
-
-                    <div class="input-group" style="max-width: 200px;">
-                        <label for="maxRetries" id="lblMaxRetries" data-i18n="console.maxRetries">最大重试次数</label>
-                        <input type="number" id="maxRetries" value="5" min="1" max="20" step="1" />
+                        <div class="input-group">
+                            <label for="maxRetries" id="lblMaxRetries" data-i18n="console.maxRetries">最大重试次数</label>
+                            <input type="number" id="maxRetries" value="5" min="1" max="20" step="1" />
+                        </div>
                     </div>
 
                     <div class="btn-group">
