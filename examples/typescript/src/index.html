@@ -2,14 +2,14 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>ESP 烧录工具</title>
+        <title>固件串口烧录工具</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css">
         <link
             href="https://fonts.googleapis.com/css?family=Orbitron"
             rel="stylesheet"
         />
-        <link rel="icon" href="../assets/favicon.ico" />
+        <link rel="icon" href="./favicon.svg" />
          <script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.min.js"></script>
          <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
          <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -19,12 +19,10 @@
         <div style="position:absolute;top:10px;right:20px">
             <button class="btn btn-default btn-sm" id="langSwitch">EN</button>
         </div>
-        <h1 align="center"><p><img src="../assets/esp-logo.png" width="42" height="42" style="vertical-align:middle" crossorigin></img> <span data-i18n="page.title">ESP 烧录工具</span></p></h1>
-        <h4 align="center" data-i18n="page.subtitle">乐鑫芯片串口烧录工具</h4>
+        <h1 align="center"><p><img src="./favicon.svg" width="42" height="42" style="vertical-align:middle" crossorigin></img> <span data-i18n="page.title">固件串口烧录工具</span></p></h1>
         <div id="safariErr" style="display:none"><p align="center" style="color:red" data-i18n="page.safariErr">此工具不支持 Safari 浏览器！</p>
         </div>
         <div align="center">
-            <a class="btn btn-info" href="./docs/index.html" data-i18n="page.apiDocs">查看 API 文档</a>
 
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="debugLogging" value="">

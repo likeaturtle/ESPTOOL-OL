@@ -5,10 +5,8 @@ const STORAGE_KEY = "esptool-lang";
 const translations: Record<Lang, Record<string, string>> = {
   en: {
     // Page
-    "page.title": "ESP Tool",
-    "page.subtitle": "A Serial Flasher utility for Espressif chips",
+    "page.title": "Firmware Serial Flasher",
     "page.safariErr": "This tool is not supported on Safari browser!",
-    "page.apiDocs": "View the API Documentation",
     "page.debugLog": "Show Debug log",
 
     // Program section
@@ -65,10 +63,8 @@ const translations: Record<Lang, Record<string, string>> = {
   },
   zh: {
     // Page
-    "page.title": "ESP 烧录工具",
-    "page.subtitle": "乐鑫芯片串口烧录工具",
+    "page.title": "固件串口烧录工具",
     "page.safariErr": "此工具不支持 Safari 浏览器！",
-    "page.apiDocs": "查看 API 文档",
     "page.debugLog": "显示调试日志",
 
     // Program section
@@ -76,7 +72,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "program.baudrate": "波特率：",
     "program.connected": "已连接设备：",
     "program.connect": "连接",
-    "program.copyTrace": "复制跟踪",
+    "program.copyTrace": "复制日志",
     "program.disconnect": "断开连接",
     "program.eraseFlash": "擦除 Flash",
 
