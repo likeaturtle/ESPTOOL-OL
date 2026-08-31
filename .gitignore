@@ -1,7 +1,13 @@
-node_modules
-lib
+node_modules/
+lib/
+dist/
+docs/
 bundle.js
-docs
 esptool-js-*.tgz
+
 .vscode/settings.json
-.parcel-cache
+.parcel-cache/
+.mimocode/
+
+.DS_Store
+*.tgz
