@@ -138,11 +138,11 @@
 
             /* Left column */
             .left-col {
-                width: 440px;
+                flex: 2;
+                min-width: 440px;
                 display: flex;
                 flex-direction: column;
                 gap: 20px;
-                flex-shrink: 0;
                 overflow-y: auto;
                 padding-right: 8px;
             }
@@ -356,11 +356,17 @@
             /* File table */
             .file-table {
                 width: 100%;
-                border-collapse: collapse;
+                border-collapse: separate;
+                border-spacing: 8px 8px;
                 font-size: 13px;
+                table-layout: fixed;
             }
+            .file-table th:nth-child(1), .file-table td:nth-child(1) { width: 20%; }
+            .file-table th:nth-child(2), .file-table td:nth-child(2) { width: 45%; }
+            .file-table th:nth-child(3), .file-table td:nth-child(3) { width: 15%; }
+            .file-table th:nth-child(4), .file-table td:nth-child(4) { width: 20%; }
             .file-table thead th {
-                text-align: left;
+                text-align: center;
                 padding: 10px 12px;
                 border-bottom: 2px solid var(--border-color);
                 font-weight: 600;
@@ -375,9 +381,10 @@
                 vertical-align: middle;
             }
             .file-table tbody tr:last-child td { border-bottom: none; }
-            .file-table input[type="text"] { height: 36px; font-size: 13px; }
-            .file-table input[type="file"] { height: 36px; font-size: 12px; }
-            .file-table input[type="button"] { height: 32px; font-size: 12px; padding: 0 10px; }
+            .file-table input[type="text"] { height: 36px; font-size: 13px; box-sizing: border-box; }
+            .file-table input[type="file"] { font-size: 12px; }
+            .file-table td .file-cell { display: flex; align-items: center; height: 36px; }
+            .file-table input[type="button"] { height: 32px; font-size: 12px; padding: 0 10px; width: 100%; }
             .file-table progress {
                 width: 100%;
                 height: 6px;
@@ -388,7 +395,7 @@
             .file-table progress::-webkit-progress-value { background: var(--success); border-radius: 999px; }
 
             /* Right column */
-            .right-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+            .right-col { flex: 3; display: flex; flex-direction: column; min-width: 0; }
             .terminal-wrapper {
                 background-color: #020617;
                 border-radius: var(--radius-lg);
@@ -555,15 +562,15 @@
                         <table class="file-table" id="fileTable">
                             <thead>
                                 <tr>
-                                    <th data-i18n="table.flashAddr">Flash 地址</th>
+                                    <th data-i18n="table.flashAddr">地址</th>
                                     <th data-i18n="table.file">文件</th>
-                                    <th></th>
-                                    <th></th>
+                                    <th data-i18n="table.action">操作</th>
+                                    <th data-i18n="table.progress">进度</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
                         </table>
-                        <div style="margin-top: 12px;">
+                        <div style="margin-top: 12px; padding-left: 8px;">
                             <button class="btn-default btn-sm" type="button" id="addFile" data-i18n-value="table.addFile">添加文件</button>
                         </div>
                     </div>

@@ -261,22 +261,19 @@ addFileButton.onclick = () => {
 
   // Column 2 - File selector
   const cell2 = row.insertCell(1);
+  const fileCell = document.createElement("div");
+  fileCell.classList.add("file-cell");
   const element2 = document.createElement("input");
   element2.type = "file";
   element2.id = "selectFile" + rowCount;
   element2.name = "selected_File" + rowCount;
   element2.addEventListener("change", handleFileSelect, false);
-  cell2.appendChild(element2);
+  fileCell.appendChild(element2);
+  cell2.appendChild(fileCell);
 
-  // Column 3  - Progress
+  // Column 3  - Remove File
   const cell3 = row.insertCell(2);
-  cell3.classList.add("progress-cell");
-  cell3.style.display = "none";
-  cell3.innerHTML = `<progress value="0" max="100"></progress>`;
-
-  // Column 4  - Remove File
-  const cell4 = row.insertCell(3);
-  cell4.classList.add("action-cell");
+  cell3.classList.add("action-cell");
   if (rowCount > 1) {
     const element4 = document.createElement("input");
     element4.type = "button";
@@ -287,8 +284,14 @@ addFileButton.onclick = () => {
     element4.onclick = function () {
       removeRow(row);
     };
-    cell4.appendChild(element4);
+    cell3.appendChild(element4);
   }
+
+  // Column 4  - Progress
+  const cell4 = row.insertCell(3);
+  cell4.classList.add("progress-cell");
+  cell4.style.visibility = "collapse";
+  cell4.innerHTML = `<progress value="0" max="100"></progress>`;
 };
 
 /**
@@ -570,13 +573,13 @@ programButton.onclick = async () => {
     const offset = parseInt(offSetObj.value);
 
     const fileObj = row.cells[1].childNodes[0] as ChildNode & { data: Uint8Array };
-    const progressBar = row.cells[2].childNodes[0];
+    const progressBar = row.cells[3].childNodes[0];
 
     progressBar.textContent = "0";
     progressBars.push(progressBar);
 
-    row.cells[2].style.display = "initial";
-    row.cells[3].style.display = "none";
+    row.cells[3].style.visibility = "visible";
+    row.cells[2].style.display = "none";
 
     fileArray.push({ data: fileObj.data, address: offset });
   }
@@ -606,8 +609,8 @@ programButton.onclick = async () => {
   } finally {
     // Hide progress bars and show erase buttons
     for (let index = 1; index < table.rows.length; index++) {
-      table.rows[index].cells[2].style.display = "none";
-      table.rows[index].cells[3].style.display = "initial";
+      table.rows[index].cells[3].style.visibility = "collapse";
+      table.rows[index].cells[2].style.display = "initial";
     }
   }
 };

@@ -7,7 +7,7 @@ const translations: Record<Lang, Record<string, string>> = {
     // Page
     "page.title": "Firmware Serial Flasher",
     "page.safariErr": "This tool is not supported on Safari browser!",
-    "page.debugLog": "Show Debug log",
+    "page.debugLog": "Show Debug Log",
 
     // Terminal
     "terminal.title": "Device Output Console",
@@ -28,8 +28,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "program.eraseFlash": "Erase Flash",
 
     // File table
-    "table.flashAddr": "Flash Address",
+    "table.flashAddr": "Address",
     "table.file": "File",
+    "table.action": "Action",
+    "table.progress": "Progress",
     "table.addFile": "Add File",
     "table.remove": "Remove",
 
@@ -95,8 +97,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "program.eraseFlash": "擦除 Flash",
 
     // File table
-    "table.flashAddr": "Flash 地址",
+    "table.flashAddr": "地址",
     "table.file": "文件",
+    "table.action": "操作",
+    "table.progress": "进度",
     "table.addFile": "添加文件",
     "table.remove": "移除",
 
@@ -183,7 +187,19 @@ export function applyI18n(): void {
   document.querySelectorAll<HTMLInputElement>("[data-i18n-value]").forEach((el) => {
     const key = el.getAttribute("data-i18n-value");
     if (key) {
-      el.value = t(key);
+      if (el instanceof HTMLButtonElement) {
+        if (el.querySelector("svg")) {
+          el.childNodes.forEach((node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+              node.textContent = t(key);
+            }
+          });
+        } else {
+          el.textContent = t(key);
+        }
+      } else {
+        el.value = t(key);
+      }
     }
   });
   // Update <option> elements that use data-i18n
