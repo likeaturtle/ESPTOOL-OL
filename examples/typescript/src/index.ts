@@ -43,6 +43,7 @@ import {
   Transport,
 } from "../../../lib";
 import { serial } from "web-serial-polyfill";
+import { t, initI18n, getLang } from "./i18n";
 
 const serialLib = !navigator.serial && navigator.usb ? serial : navigator.serial;
 
@@ -70,6 +71,19 @@ flashSize.style.display = "none";
 lblFlashMode.style.display = "none";
 lblFlashFreq.style.display = "none";
 lblFlashSize.style.display = "none";
+
+// Initialize i18n — must run after DOM elements are available
+initI18n();
+
+// Update "Connected to device: <chip>" label with current language + chip name
+function updateConnLabel() {
+  if (chip) {
+    lblConnTo.textContent = t("program.connected") + chip;
+  }
+}
+
+// Re-apply chip label on language switch (chip info is not in data-i18n)
+document.getElementById("langSwitch")!.addEventListener("click", updateConnLabel);
 
 /**
  * The built in Event object.
@@ -120,7 +134,7 @@ function populateFlashDropdowns() {
   }
 
   // Populate Flash Frequency dropdown
-  flashFreq.innerHTML = '<option value="keep">keep</option>';
+  flashFreq.innerHTML = `<option value="keep" data-i18n="flash.keep">${t("flash.keep")}</option>`;
   const flashFreqKeys = Object.keys(esploader.chip.FLASH_FREQUENCY).sort((a, b) => {
     const freqOrder = ["80m", "60m", "48m", "40m", "30m", "26m", "24m", "20m", "16m", "15m", "12m"];
     const indexA = freqOrder.indexOf(a);
@@ -139,7 +153,7 @@ function populateFlashDropdowns() {
   flashFreq.options[0].selected = true;
 
   // Populate Flash Size dropdown
-  flashSize.innerHTML = '<option value="detect">detect</option><option value="keep">keep</option>';
+  flashSize.innerHTML = `<option value="detect" data-i18n="flash.detect">${t("flash.detect")}</option><option value="keep" data-i18n="flash.keep">${t("flash.keep")}</option>`;
   const flashSizeKeys = Object.keys(esploader.chip.FLASH_SIZES).sort((a, b) => {
     const sizeOrder = [
       "256KB",
@@ -197,7 +211,7 @@ connectButton.onclick = async () => {
     // eslint-disable-next-line no-console
     console.log("Settings done for :" + chip);
     lblBaudrate.style.display = "none";
-    lblConnTo.innerHTML = "Connected to device: " + chip;
+    updateConnLabel();
     lblConnTo.style.display = "block";
     baudrates.style.display = "none";
     connectButton.style.display = "none";
@@ -281,7 +295,7 @@ addFileButton.onclick = () => {
     const btnName = "button" + rowCount;
     element4.name = btnName;
     element4.setAttribute("class", "btn");
-    element4.setAttribute("value", "Remove"); // or element1.value = "button";
+    element4.setAttribute("value", t("table.remove"));
     element4.onclick = function () {
       removeRow(row);
     };
@@ -354,7 +368,7 @@ consoleStartButton.onclick = async () => {
     // Set up device lost callback
     transport.setDeviceLostCallback(async () => {
       if (!isConsoleClosed && !isReconnecting) {
-        term.writeln("\n[DEVICE LOST] Device disconnected. Trying to reconnect...");
+        term.writeln(t("msg.deviceLost"));
         await sleep(parseInt(reconnectDelay.value));
         isReconnecting = true;
 
@@ -363,7 +377,7 @@ consoleStartButton.onclick = async () => {
 
         while (retryCount < maxRetries && !isConsoleClosed) {
           retryCount++;
-          term.writeln(`\n[RECONNECT] Attempt ${retryCount}/${maxRetries}...`);
+          term.writeln(t("msg.reconnectAttempt", { count: retryCount, max: maxRetries }));
 
           if (serialLib && serialLib.getPorts) {
             const ports = await serialLib.getPorts();
@@ -377,9 +391,9 @@ consoleStartButton.onclick = async () => {
               if (newDevice) {
                 device = newDevice;
                 transport.updateDevice(device);
-                term.writeln("[RECONNECT] Found previously authorized device, connecting...");
+                term.writeln(t("msg.reconnectFound"));
                 await transport.connect(parseInt(consoleBaudrates.value));
-                term.writeln("[RECONNECT] Successfully reconnected!");
+                term.writeln(t("msg.reconnectSuccess"));
                 consoleStopButton.style.display = "initial";
                 resetButton.style.display = "initial";
                 isReconnecting = false;
@@ -391,13 +405,13 @@ consoleStartButton.onclick = async () => {
           }
 
           if (retryCount < maxRetries) {
-            term.writeln(`[RECONNECT] Device not found, retrying in ${parseInt(reconnectDelay.value)}ms...`);
+            term.writeln(t("msg.reconnectNotFound", { ms: parseInt(reconnectDelay.value) }));
             await sleep(parseInt(reconnectDelay.value));
           }
         }
 
         if (retryCount >= maxRetries) {
-          term.writeln("\n[RECONNECT] Failed to reconnect after 5 attempts. Please manually reconnect.");
+          term.writeln(t("msg.reconnectFailed", { max: maxRetries }));
           isReconnecting = false;
         }
       }
@@ -471,12 +485,12 @@ async function startConsoleReading() {
     }
   } catch (error) {
     if (!isConsoleClosed) {
-      term.writeln(`\n[CONSOLE ERROR] ${error instanceof Error ? error.message : String(error)}`);
+      term.writeln(t("msg.consoleError", { error: error instanceof Error ? error.message : String(error) }));
     }
   }
 
   if (!isConsoleClosed) {
-    term.writeln("\n[CONSOLE] Connection lost, waiting for reconnection...");
+    term.writeln(t("msg.consoleLost"));
   }
 }
 
@@ -518,14 +532,14 @@ function validateProgramInputs() {
     offset = parseInt(offSetObj.value);
 
     // Non-numeric or blank offset
-    if (Number.isNaN(offset)) return "Offset field in row " + index + " is not a valid address!";
+    if (Number.isNaN(offset)) return t("validate.offsetInvalid", { row: index });
     // Repeated offset used
-    else if (offsetArr.includes(offset)) return "Offset field in row " + index + " is already in use!";
+    else if (offsetArr.includes(offset)) return t("validate.offsetDuplicate", { row: index });
     else offsetArr.push(offset);
 
     const fileObj = row.cells[1].childNodes[0];
     fileData = fileObj.data;
-    if (fileData == null) return "No file selected for row " + index + "!";
+    if (fileData == null) return t("validate.noFile", { row: index });
   }
   return "success";
 }

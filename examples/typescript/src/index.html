@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>ESP Tool</title>
+        <title>ESP 烧录工具</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css">
         <link
@@ -16,24 +16,27 @@
          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     </head>
     <body>
-        <h1 align="center"><p><img src="../assets/esp-logo.png" width="42" height="42" style="vertical-align:middle" crossorigin></img> ESP Tool</p></h1>
-        <h4 align="center">A Serial Flasher utility for Espressif chips</h4>
-        <div id="safariErr" style="display:none"><p align="center" style="color:red">This tool is not supported on Safari browser!</p>
+        <div style="position:absolute;top:10px;right:20px">
+            <button class="btn btn-default btn-sm" id="langSwitch">EN</button>
+        </div>
+        <h1 align="center"><p><img src="../assets/esp-logo.png" width="42" height="42" style="vertical-align:middle" crossorigin></img> <span data-i18n="page.title">ESP 烧录工具</span></p></h1>
+        <h4 align="center" data-i18n="page.subtitle">乐鑫芯片串口烧录工具</h4>
+        <div id="safariErr" style="display:none"><p align="center" style="color:red" data-i18n="page.safariErr">此工具不支持 Safari 浏览器！</p>
         </div>
         <div align="center">
-            <a class="btn btn-info" href="./docs/index.html">View the API Documentation</a>
+            <a class="btn btn-info" href="./docs/index.html" data-i18n="page.apiDocs">查看 API 文档</a>
 
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="checkbox" id="debugLogging" value="">
-                <label class="form-check-label" for="debugLogging">Show Debug log</label>
+                <label class="form-check-label" for="debugLogging" data-i18n="page.debugLog">显示调试日志</label>
             </div>
           </div>
         <div class="container" id="main">
             <hr/>
             <div id="program">
-                <h3> Program </h3>
-                <label for="baudrates" id="lblBaudrate">Baudrate:</label>
-                <label style="display:none" id="lblConnTo">Connected to device: </label>
+                <h3 data-i18n="program.title">烧录</h3>
+                <label for="baudrates" id="lblBaudrate" data-i18n="program.baudrate">波特率：</label>
+                <label style="display:none" id="lblConnTo" data-i18n="program.connected">已连接设备：</label>
                 <select name="baudrates" id="baudrates">
                     <option value="921600">921600</option>
                     <option value="460800">460800</option>
@@ -43,10 +46,10 @@
 
                 <br><br>
 
-                <input class="btn btn-info btn-sm" type="button" id="connectButton" value="Connect" />
-                <input class="btn btn-info btn-sm" type="button" id="copyTraceButton" value="Copy Trace" />
-                <input class="btn btn-warning btn-sm" type="button" id="disconnectButton" value="Disconnect" />
-                <input class="btn btn-danger btn-sm" type="button" id="eraseButton" value="Erase Flash" />
+                <input class="btn btn-info btn-sm" type="button" id="connectButton" data-i18n-value="program.connect" value="连接" />
+                <input class="btn btn-info btn-sm" type="button" id="copyTraceButton" data-i18n-value="program.copyTrace" value="复制跟踪" />
+                <input class="btn btn-warning btn-sm" type="button" id="disconnectButton" data-i18n-value="program.disconnect" value="断开连接" />
+                <input class="btn btn-danger btn-sm" type="button" id="eraseButton" data-i18n-value="program.eraseFlash" value="擦除 Flash" />
                 <br>
 
                 <div class="alert alert-danger alert-dismissible" id="alertDiv" style="display:none; margin-top:10px">
@@ -58,59 +61,59 @@
                     <table class="table table-striped" id="fileTable">
                         <thead class="thead-light">
                             <tr>
-                                <th>Flash Address</th>
-                                <th>File</th>
+                                <th data-i18n="table.flashAddr">Flash 地址</th>
+                                <th data-i18n="table.file">文件</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                         </tbody>
                     </table>
-                    <input class="btn btn-info btn-sm" type="button" id="addFile" value="Add File" />
+                    <input class="btn btn-info btn-sm" type="button" id="addFile" data-i18n-value="table.addFile" value="添加文件" />
                     <br><br>
-                    <label for="flashMode" id="lblFlashMode">Flash Mode:</label>
+                    <label for="flashMode" id="lblFlashMode" data-i18n="flash.mode">Flash 模式：</label>
                     <select name="flashMode" id="flashMode">
-                        <option value="keep" selected>keep</option>
+                        <option value="keep" selected data-i18n="flash.keep">保持不变</option>
                         <option value="dio">dio</option>
                         <option value="qio">qio</option>
                         <option value="dout">dout</option>
                         <option value="qout">qout</option>
                     </select>
                     <br><br>
-                    <label for="flashFreq" id="lblFlashFreq">Flash Frequency:</label>
+                    <label for="flashFreq" id="lblFlashFreq" data-i18n="flash.freq">Flash 频率：</label>
                     <select name="flashFreq" id="flashFreq">
-                        <option value="keep">keep</option>
+                        <option value="keep" data-i18n="flash.keep">保持不变</option>
                     </select>
                     <br><br>
-                    <label for="flashSize" id="lblFlashSize">Flash Size:</label>
+                    <label for="flashSize" id="lblFlashSize" data-i18n="flash.size">Flash 大小：</label>
                     <select name="flashSize" id="flashSize">
-                        <option value="detect">detect</option>
-                        <option value="keep">keep</option>
+                        <option value="detect" data-i18n="flash.detect">自动检测</option>
+                        <option value="keep" data-i18n="flash.keep">保持不变</option>
                     </select>
                     <br><br>
-                    <input class="btn btn-info btn-sm" type="button" id="programButton" value="Program" />
+                    <input class="btn btn-info btn-sm" type="button" id="programButton" data-i18n-value="flash.program" value="烧录" />
                 </div>
                 <output id="list"></output>
                 <hr/>
             </div>
             <div id="console">
-                <h3>Console </h3>
-                <label style="display:none" id="lblConsoleFor">Connected to device: </label>
-                <label for="consoleBaudrates" id="lblConsoleBaudrate">Baudrate:</label>
+                <h3 data-i18n="console.title">控制台</h3>
+                <label style="display:none" id="lblConsoleFor" data-i18n="console.connected">已连接设备：</label>
+                <label for="consoleBaudrates" id="lblConsoleBaudrate" data-i18n="console.baudrate">波特率：</label>
                 <select name="consoleBaudrates" id="consoleBaudrates">
                     <option value="115200">115200</option>
                     <option value="74880">74880</option>
                 </select>
-                <label for="reconnectDelay" id="lblReconnectDelay">Reconnect Delay (ms):</label>
+                <label for="reconnectDelay" id="lblReconnectDelay" data-i18n="console.reconnectDelay">重连延迟（毫秒）：</label>
                 <input type="number" id="reconnectDelay" name="reconnectDelay" value="1000" min="100" max="10000" step="100">
-                <label for="maxRetries" id="lblMaxRetries">Max Retries:</label>
+                <label for="maxRetries" id="lblMaxRetries" data-i18n="console.maxRetries">最大重试次数：</label>
                 <input type="number" id="maxRetries" name="maxRetries" value="5" min="1" max="20" step="1">
 
                 <br><br>
 
-                <input class="btn btn-info" type="button" id="consoleStartButton" value="Start" />
-                <input class="btn btn-info" type="button" id="consoleStopButton" value="Stop" />
-                <input class="btn btn-info" type="button" id="resetButton" value="Reset" />
+                <input class="btn btn-info" type="button" id="consoleStartButton" data-i18n-value="console.start" value="开始" />
+                <input class="btn btn-info" type="button" id="consoleStopButton" data-i18n-value="console.stop" value="停止" />
+                <input class="btn btn-info" type="button" id="resetButton" data-i18n-value="console.reset" value="重置" />
                 <hr/>
             </div>
             <div id="terminal"></div>
