@@ -12,11 +12,14 @@ const eraseButton = document.getElementById("eraseButton") as HTMLButtonElement;
 const addFileButton = document.getElementById("addFile") as HTMLButtonElement;
 const programButton = document.getElementById("programButton");
 const filesDiv = document.getElementById("files");
+const flashSettingsDiv = document.getElementById("flashSettings");
+const programBtnWrap = document.getElementById("programBtnWrap");
 const terminal = document.getElementById("terminal");
 const programDiv = document.getElementById("program");
 const consoleDiv = document.getElementById("console");
 const lblBaudrate = document.getElementById("lblBaudrate");
-const lblConsoleBaudrate = document.getElementById("lblConsoleBaudrate");
+const baudrateGroup = document.getElementById("baudrateGroup");
+const consoleBaudGroup = document.getElementById("consoleBaudGroup");
 const lblConsoleFor = document.getElementById("lblConsoleFor");
 const lblConnTo = document.getElementById("lblConnTo");
 const table = document.getElementById("fileTable") as HTMLTableElement;
@@ -24,9 +27,6 @@ const alertDiv = document.getElementById("alertDiv");
 const flashMode = document.getElementById("flashMode") as HTMLSelectElement;
 const flashFreq = document.getElementById("flashFreq") as HTMLSelectElement;
 const flashSize = document.getElementById("flashSize") as HTMLSelectElement;
-const lblFlashMode = document.getElementById("lblFlashMode");
-const lblFlashFreq = document.getElementById("lblFlashFreq");
-const lblFlashSize = document.getElementById("lblFlashSize");
 
 const debugLogging = document.getElementById("debugLogging") as HTMLInputElement;
 
@@ -43,7 +43,7 @@ import {
   Transport,
 } from "../../../lib";
 import { serial } from "web-serial-polyfill";
-import { t, initI18n, getLang } from "./i18n";
+import { t, initI18n, onLanguageChange } from "./i18n";
 
 const serialLib = !navigator.serial && navigator.usb ? serial : navigator.serial;
 
@@ -59,21 +59,18 @@ let transport: Transport;
 let chip: string = null;
 let esploader: ESPLoader;
 
-disconnectButton.style.display = "none";
-traceButton.style.display = "none";
-eraseButton.style.display = "none";
-consoleStopButton.style.display = "none";
-resetButton.style.display = "none";
-filesDiv.style.display = "none";
-flashMode.style.display = "none";
-flashFreq.style.display = "none";
-flashSize.style.display = "none";
-lblFlashMode.style.display = "none";
-lblFlashFreq.style.display = "none";
-lblFlashSize.style.display = "none";
+disconnectButton.classList.add("hidden");
+traceButton.classList.add("hidden");
+eraseButton.classList.add("hidden");
+consoleStopButton.classList.add("hidden");
+resetButton.classList.add("hidden");
+filesDiv.classList.add("hidden");
+flashSettingsDiv.classList.add("hidden");
+programBtnWrap.classList.add("hidden");
 
 // Initialize i18n — must run after DOM elements are available
 initI18n();
+onLanguageChange(updateConnLabel);
 
 // Update "Connected to device: <chip>" label with current language + chip name
 function updateConnLabel() {
@@ -81,9 +78,6 @@ function updateConnLabel() {
     lblConnTo.textContent = t("program.connected") + chip;
   }
 }
-
-// Re-apply chip label on language switch (chip info is not in data-i18n)
-document.getElementById("langSwitch")!.addEventListener("click", updateConnLabel);
 
 /**
  * The built in Event object.
@@ -200,7 +194,6 @@ connectButton.onclick = async () => {
     } as LoaderOptions;
     esploader = new ESPLoader(flashOptions);
 
-    traceButton.style.display = "initial";
     chip = await esploader.main();
 
     // Populate flash dropdowns based on chip's supported values
@@ -210,21 +203,18 @@ connectButton.onclick = async () => {
     // await esploader.flashId();
     // eslint-disable-next-line no-console
     console.log("Settings done for :" + chip);
-    lblBaudrate.style.display = "none";
+    lblBaudrate.classList.add("hidden");
+    baudrateGroup.classList.add("hidden");
     updateConnLabel();
-    lblConnTo.style.display = "block";
-    baudrates.style.display = "none";
-    connectButton.style.display = "none";
-    disconnectButton.style.display = "initial";
-    eraseButton.style.display = "initial";
-    filesDiv.style.display = "initial";
-    flashMode.style.display = "initial";
-    flashFreq.style.display = "initial";
-    flashSize.style.display = "initial";
-    lblFlashMode.style.display = "initial";
-    lblFlashFreq.style.display = "initial";
-    lblFlashSize.style.display = "initial";
-    consoleDiv.style.display = "none";
+    lblConnTo.classList.remove("hidden");
+    connectButton.classList.add("hidden");
+    traceButton.classList.remove("hidden");
+    disconnectButton.classList.remove("hidden");
+    eraseButton.classList.remove("hidden");
+    filesDiv.classList.remove("hidden");
+    flashSettingsDiv.classList.remove("hidden");
+    programBtnWrap.classList.remove("hidden");
+    consoleDiv.classList.add("hidden");
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(e);
@@ -325,30 +315,26 @@ function cleanUp() {
   device = null;
   deviceInfo = null;
   transport = null;
-  chip = null;
+  // Preserve chip name so console mode can display it if already detected
 }
 
 disconnectButton.onclick = async () => {
   if (transport) await transport.disconnect();
 
   term.reset();
-  lblBaudrate.style.display = "initial";
-  baudrates.style.display = "initial";
-  consoleBaudrates.style.display = "initial";
-  connectButton.style.display = "initial";
-  disconnectButton.style.display = "none";
-  traceButton.style.display = "none";
-  eraseButton.style.display = "none";
-  lblConnTo.style.display = "none";
-  filesDiv.style.display = "none";
-  flashMode.style.display = "none";
-  flashFreq.style.display = "none";
-  flashSize.style.display = "none";
-  lblFlashMode.style.display = "none";
-  lblFlashFreq.style.display = "none";
-  lblFlashSize.style.display = "none";
-  alertDiv.style.display = "none";
-  consoleDiv.style.display = "initial";
+  lblBaudrate.classList.remove("hidden");
+  baudrateGroup.classList.remove("hidden");
+  consoleBaudGroup.classList.remove("hidden");
+  connectButton.classList.remove("hidden");
+  disconnectButton.classList.add("hidden");
+  traceButton.classList.add("hidden");
+  eraseButton.classList.add("hidden");
+  lblConnTo.classList.add("hidden");
+  filesDiv.classList.add("hidden");
+  flashSettingsDiv.classList.add("hidden");
+  programBtnWrap.classList.add("hidden");
+  alertDiv.classList.add("hidden");
+  consoleDiv.classList.remove("hidden");
   cleanUp();
 };
 
@@ -382,7 +368,7 @@ consoleStartButton.onclick = async () => {
           if (serialLib && serialLib.getPorts) {
             const ports = await serialLib.getPorts();
             if (ports.length > 0) {
-              const newDevice = ports.find(
+              const newDevice = (ports as SerialPort[]).find(
                 (port) =>
                   port.getInfo().usbVendorId === deviceInfo.usbVendorId &&
                   port.getInfo().usbProductId === deviceInfo.usbProductId,
@@ -394,8 +380,8 @@ consoleStartButton.onclick = async () => {
                 term.writeln(t("msg.reconnectFound"));
                 await transport.connect(parseInt(consoleBaudrates.value));
                 term.writeln(t("msg.reconnectSuccess"));
-                consoleStopButton.style.display = "initial";
-                resetButton.style.display = "initial";
+                consoleStopButton.classList.remove("hidden");
+                resetButton.classList.remove("hidden");
                 isReconnecting = false;
 
                 startConsoleReading();
@@ -418,13 +404,34 @@ consoleStartButton.onclick = async () => {
     });
   }
 
-  lblConsoleFor.style.display = "block";
-  lblConsoleBaudrate.style.display = "none";
-  consoleBaudrates.style.display = "none";
-  consoleStartButton.style.display = "none";
-  consoleStopButton.style.display = "initial";
-  resetButton.style.display = "initial";
-  programDiv.style.display = "none";
+  // Detect chip name before starting console (briefly resets device)
+  if (!chip) {
+    try {
+      const detectTransport = new Transport(device, true);
+      const detectLoader = new ESPLoader({
+        transport: detectTransport,
+        baudrate: 115200,
+        terminal: { clean() {}, writeLine() {}, write() {} },
+      });
+      chip = await detectLoader.main();
+      await detectLoader.after("hard_reset");
+      await detectTransport.disconnect();
+    } catch (e) {
+      // Detection failed (timeout, device not responding) — fall back to VID/PID
+      console.log("Chip detection skipped:", e instanceof Error ? e.message : e);
+    }
+  }
+
+  const deviceId = chip
+    ? chip
+    : `VID:0x${deviceInfo.usbVendorId.toString(16).toUpperCase()} PID:0x${deviceInfo.usbProductId.toString(16).toUpperCase()}`;
+  lblConsoleFor.textContent = t("console.connected") + deviceId;
+  lblConsoleFor.classList.remove("hidden");
+  consoleBaudGroup.classList.add("hidden");
+  consoleStartButton.classList.add("hidden");
+  consoleStopButton.classList.remove("hidden");
+  resetButton.classList.remove("hidden");
+  programDiv.classList.add("hidden");
 
   await transport.connect(parseInt(consoleBaudrates.value));
   isConsoleClosed = false;
@@ -502,13 +509,12 @@ consoleStopButton.onclick = async () => {
     await transport.waitForUnlock(1500);
   }
   term.reset();
-  lblConsoleBaudrate.style.display = "initial";
-  consoleBaudrates.style.display = "initial";
-  consoleStartButton.style.display = "initial";
-  consoleStopButton.style.display = "none";
-  resetButton.style.display = "none";
-  lblConsoleFor.style.display = "none";
-  programDiv.style.display = "initial";
+  consoleBaudGroup.classList.remove("hidden");
+  consoleStartButton.classList.remove("hidden");
+  consoleStopButton.classList.add("hidden");
+  resetButton.classList.add("hidden");
+  lblConsoleFor.classList.add("hidden");
+  programDiv.classList.remove("hidden");
   cleanUp();
 };
 
@@ -550,12 +556,12 @@ programButton.onclick = async () => {
 
   if (err != "success") {
     alertMsg.innerHTML = "<strong>" + err + "</strong>";
-    alertDiv.style.display = "block";
+    alertDiv.classList.remove("hidden");
     return;
   }
 
   // Hide error message
-  alertDiv.style.display = "none";
+  alertDiv.classList.add("hidden");
 
   const fileArray = [];
   const progressBars = [];

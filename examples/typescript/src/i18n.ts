@@ -9,6 +9,15 @@ const translations: Record<Lang, Record<string, string>> = {
     "page.safariErr": "This tool is not supported on Safari browser!",
     "page.debugLog": "Show Debug log",
 
+    // Terminal
+    "terminal.title": "Device Output Console",
+
+    // Badge
+    "badge.html": `Supported by <a href="https://github.com/espressif/esptool-js" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">esptool-js</a>`,
+
+    // Footer
+    "footer.copyright": "\u00A9 2026 ACENOVA TECH Copyright",
+
     // Program section
     "program.title": "Program",
     "program.baudrate": "Baudrate:",
@@ -67,6 +76,15 @@ const translations: Record<Lang, Record<string, string>> = {
     "page.safariErr": "此工具不支持 Safari 浏览器！",
     "page.debugLog": "显示调试日志",
 
+    // Terminal
+    "terminal.title": "设备输出控制台",
+
+    // Badge
+    "badge.html": `源自 <a href="https://github.com/espressif/esptool-js" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">esptool-js</a>`,
+
+    // Footer
+    "footer.copyright": "\u00A9 2026 诚诺通科技 版权所有",
+
     // Program section
     "program.title": "烧录",
     "program.baudrate": "波特率：",
@@ -121,6 +139,7 @@ const translations: Record<Lang, Record<string, string>> = {
 };
 
 let currentLang: Lang = (localStorage.getItem(STORAGE_KEY) as Lang) || "zh";
+let onLangChange: (() => void) | null = null;
 
 /**
  * Get current language.
@@ -141,6 +160,13 @@ export function t(key: string, params?: Record<string, string | number>): string
     }
   }
   return text;
+}
+
+/**
+ * Register a callback to run after language changes.
+ */
+export function onLanguageChange(cb: () => void): void {
+  onLangChange = cb;
 }
 
 /**
@@ -170,10 +196,19 @@ export function applyI18n(): void {
   // Update the lang switch button text
   const btn = document.getElementById("langSwitch");
   if (btn) {
-    btn.textContent = t("lang.switch");
+    btn.title = t("lang.switch");
   }
   // Update page title
   document.title = t("page.title");
+  // Update badge (contains HTML link)
+  const badge = document.getElementById("badge");
+  if (badge) {
+    badge.innerHTML = t("badge.html");
+  }
+  // Fire language change callback
+  if (onLangChange) {
+    onLangChange();
+  }
 }
 
 /**
@@ -186,12 +221,50 @@ export function toggleLang(): void {
 }
 
 /**
- * Initialize i18n: apply current language and wire up the switch button.
+ * Highlight the active language option in the dropdown.
+ */
+function updateActiveOption(): void {
+  const menu = document.getElementById("langMenu");
+  if (!menu) return;
+  menu.querySelectorAll<HTMLElement>(".lang-option").forEach((opt) => {
+    opt.classList.toggle("active", opt.getAttribute("data-lang") === currentLang);
+  });
+}
+
+/**
+ * Initialize i18n: apply current language and wire up the dropdown.
  */
 export function initI18n(): void {
   applyI18n();
+
   const btn = document.getElementById("langSwitch");
-  if (btn) {
-    btn.addEventListener("click", toggleLang);
+  const menu = document.getElementById("langMenu");
+  const dropdown = document.getElementById("langDropdown");
+
+  if (btn && menu && dropdown) {
+    // Toggle dropdown on button click
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.toggle("open");
+      updateActiveOption();
+    });
+
+    // Switch language on option click
+    menu.querySelectorAll<HTMLElement>(".lang-option").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        const lang = opt.getAttribute("data-lang") as Lang;
+        if (lang && lang !== currentLang) {
+          currentLang = lang;
+          localStorage.setItem(STORAGE_KEY, currentLang);
+          applyI18n();
+        }
+        menu.classList.remove("open");
+      });
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener("click", () => {
+      menu.classList.remove("open");
+    });
   }
 }
