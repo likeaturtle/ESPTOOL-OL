@@ -1,6 +1,6 @@
-import { ESPLoader } from "../esploader";
-import { ESP32C6ROM } from "./esp32c6";
-import { MemoryMapEntry } from "./rom";
+import { ESPLoader } from "../esploader.js";
+import { ESP32C6ROM } from "./esp32c6.js";
+import { MemoryMapEntry } from "./rom.js";
 
 export class ESP32C5ROM extends ESP32C6ROM {
   public CHIP_NAME = "ESP32-C5";
@@ -54,7 +54,7 @@ export class ESP32C5ROM extends ESP32C6ROM {
   public UARTDEV_BUF_NO = 0x4085f514; // Variable in ROM .bss which indicates the port in use
 
   // Magic value for ESP32C5
-  public CHIP_DETECT_MAGIC_VALUE = [0x1101406f, 0x63e1406f, 0x5fd1406f];
+  public CHIP_DETECT_MAGIC_VALUE = [0x1101406f, 0x63e1406f, 0x5fd1406f, 0x30e1706f];
 
   public FLASH_FREQUENCY = {
     "80m": 0xf,
@@ -221,13 +221,10 @@ export class ESP32C5ROM extends ESP32C6ROM {
   }
 
   public async changeBaud(loader: ESPLoader): Promise<void> {
-    // Note: secure_download_mode check would need to be added to ESPLoader if needed
-    // if (loader.secureDownloadMode) {
-    //   loader.info(
-    //     "Baud rate change is not supported in secure download mode. " + "Keeping 115200 baud.",
-    //   );
-    //   return;
-    // }
+    if (loader.secureDownloadMode) {
+      loader.info("Baud rate change is not supported in secure download mode. " + "Keeping 115200 baud.");
+      return;
+    }
     if (!loader.IS_STUB) {
       const crystalFreqRomExpect = await this.getCrystalFreqRomExpect(loader);
       const crystalFreqDetect = await this.getCrystalFreq(loader);

@@ -1,20 +1,24 @@
-import { ROM } from "../targets/rom";
-import { ESPError } from "../types/error";
-import { bstrToUi8 } from "../util";
-import { BaseFirmwareImage, ESP_IMAGE_MAGIC } from "./base";
-import { ESP32FirmwareImage } from "./esp32";
-import { ESP8266ROMFirmwareImage, ESP8266V2FirmwareImage } from "./esp8266";
+import { ROM } from "../targets/rom.js";
+import { ESPError } from "../types/error.js";
+import { bstrToUi8 } from "../util.js";
+import { BaseFirmwareImage, ESP_IMAGE_MAGIC } from "./base.js";
+import { ESP32FirmwareImage } from "./esp32.js";
+import { ESP8266ROMFirmwareImage, ESP8266V2FirmwareImage } from "./esp8266.js";
 import {
   ESP32C2FirmwareImage,
   ESP32C3FirmwareImage,
   ESP32C5FirmwareImage,
   ESP32C61FirmwareImage,
   ESP32C6FirmwareImage,
+  ESP32E22FirmwareImage,
   ESP32H2FirmwareImage,
+  ESP32H21FirmwareImage,
+  ESP32H4FirmwareImage,
   ESP32P4FirmwareImage,
   ESP32S2FirmwareImage,
   ESP32S3FirmwareImage,
-} from "./others";
+  ESP32S31FirmwareImage,
+} from "./others.js";
 
 /**
  * Function to load a firmware image from a Uint8Array or string
@@ -42,6 +46,9 @@ export async function loadFirmwareImage(rom: ROM, imageData: Uint8Array | string
       case "esp32s3":
         firmwareImageClass = ESP32S3FirmwareImage;
         break;
+      case "esp32s31":
+        firmwareImageClass = ESP32S31FirmwareImage;
+        break;
       case "esp32c3":
         firmwareImageClass = ESP32C3FirmwareImage;
         break;
@@ -57,8 +64,17 @@ export async function loadFirmwareImage(rom: ROM, imageData: Uint8Array | string
       case "esp32c5":
         firmwareImageClass = ESP32C5FirmwareImage;
         break;
+      case "esp32e22":
+        firmwareImageClass = ESP32E22FirmwareImage;
+        break;
       case "esp32h2":
         firmwareImageClass = ESP32H2FirmwareImage;
+        break;
+      case "esp32h21":
+        firmwareImageClass = ESP32H21FirmwareImage;
+        break;
+      case "esp32h4":
+        firmwareImageClass = ESP32H4FirmwareImage;
         break;
       case "esp32p4":
         firmwareImageClass = ESP32P4FirmwareImage;

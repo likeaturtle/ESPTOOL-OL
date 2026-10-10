@@ -42,11 +42,13 @@ import {
   FlashSizeValues,
   LoaderOptions,
   Transport,
+  WebUSBSerialPort,
 } from "../../../lib";
 import { serial } from "web-serial-polyfill";
 import { t, initI18n, onLanguageChange } from "./i18n";
 
 const serialLib = !navigator.serial && navigator.usb ? serial : navigator.serial;
+const useWebUsb = document.getElementById("useWebUsb") as HTMLInputElement;
 
 declare let Terminal; // Terminal is imported in HTML script
 declare let CryptoJS; // CryptoJS is imported in HTML script
@@ -56,6 +58,7 @@ term.open(terminal);
 
 let device = null;
 let deviceInfo = null;
+let usingWebUsb = false;
 let transport: Transport;
 let chip: string = null;
 let esploader: ESPLoader;
@@ -178,10 +181,24 @@ function populateFlashDropdowns() {
   flashSize.options[1].selected = true;
 }
 
+/**
+ * Request a serial device via Web Serial or opt-in CH340 WebUSB.
+ * @returns {Promise<object>} Selected port.
+ */
+async function requestDevice() {
+  if (useWebUsb.checked) {
+    usingWebUsb = true;
+    const port = await WebUSBSerialPort.requestPort();
+    return port.asSerialPort();
+  }
+  usingWebUsb = false;
+  return serialLib.requestPort({});
+}
+
 connectButton.onclick = async () => {
   try {
     if (device === null) {
-      device = await serialLib.requestPort({});
+      device = await requestDevice();
       deviceInfo = device.getInfo();
       transport = new Transport(device, true);
     }
@@ -315,6 +332,7 @@ function removeRow(row: HTMLTableRowElement) {
 function cleanUp() {
   device = null;
   deviceInfo = null;
+  usingWebUsb = false;
   transport = null;
   // Preserve chip name so console mode can display it if already detected
 }
@@ -347,7 +365,7 @@ const sleep = async (ms: number) => {
 
 consoleStartButton.onclick = async () => {
   if (device === null) {
-    device = await serialLib.requestPort({});
+    device = await requestDevice();
     transport = new Transport(device, true);
     deviceInfo = device.getInfo();
 
@@ -365,29 +383,37 @@ consoleStartButton.onclick = async () => {
           retryCount++;
           term.writeln(t("msg.reconnectAttempt", { count: retryCount, max: maxRetries }));
 
-          if (serialLib && serialLib.getPorts) {
-            const ports = await serialLib.getPorts();
-            if (ports.length > 0) {
-              const newDevice = (ports as SerialPort[]).find(
-                (port) =>
-                  port.getInfo().usbVendorId === deviceInfo.usbVendorId &&
-                  port.getInfo().usbProductId === deviceInfo.usbProductId,
-              );
-
-              if (newDevice) {
-                device = newDevice;
-                transport.updateDevice(device);
-                term.writeln(t("msg.reconnectFound"));
-                await transport.connect(parseInt(consoleBaudrates.value));
-                term.writeln(t("msg.reconnectSuccess"));
-                consoleStopButton.classList.remove("hidden");
-                resetButton.classList.remove("hidden");
-                isReconnecting = false;
-
-                startConsoleReading();
-                return;
-              }
+          let newDevice = null;
+          if (usingWebUsb && navigator.usb) {
+            const usbDevices = await navigator.usb.getDevices();
+            const match = usbDevices.find(
+              (usbDevice) =>
+                usbDevice.vendorId === deviceInfo.usbVendorId && usbDevice.productId === deviceInfo.usbProductId,
+            );
+            if (match) {
+              newDevice = new WebUSBSerialPort(match).asSerialPort();
             }
+          } else if (serialLib && serialLib.getPorts) {
+            const ports = await serialLib.getPorts();
+            newDevice = (ports as SerialPort[]).find(
+              (port) =>
+                port.getInfo().usbVendorId === deviceInfo.usbVendorId &&
+                port.getInfo().usbProductId === deviceInfo.usbProductId,
+            );
+          }
+
+          if (newDevice) {
+            device = newDevice;
+            transport.updateDevice(device);
+            term.writeln(t("msg.reconnectFound"));
+            await transport.connect(parseInt(consoleBaudrates.value));
+            term.writeln(t("msg.reconnectSuccess"));
+            consoleStopButton.classList.remove("hidden");
+            resetButton.classList.remove("hidden");
+            isReconnecting = false;
+
+            startConsoleReading();
+            return;
           }
 
           if (retryCount < maxRetries) {

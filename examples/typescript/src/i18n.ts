@@ -26,6 +26,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "program.copyTrace": "Copy Trace",
     "program.disconnect": "Disconnect",
     "program.eraseFlash": "Erase Flash",
+    "program.useWebUsb": "WebUSB (CH340)",
 
     // File table
     "table.flashAddr": "Address",
@@ -95,6 +96,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "program.copyTrace": "复制日志",
     "program.disconnect": "断开连接",
     "program.eraseFlash": "擦除 Flash",
+    "program.useWebUsb": "WebUSB (CH340)",
 
     // File table
     "table.flashAddr": "地址",

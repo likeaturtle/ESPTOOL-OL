@@ -1,8 +1,8 @@
-import { bstrToUi8, ESP_CHECKSUM_MAGIC } from "../util";
-import { alignFilePosition, BaseFirmwareImage, ELFSection, ESP_IMAGE_MAGIC, ImageSegment } from "./base";
-import { ESPError } from "../types/error";
-import { ROM } from "../targets/rom";
-import { ESP32ROM } from "../targets/esp32";
+import { bstrToUi8, ESP_CHECKSUM_MAGIC } from "../util.js";
+import { alignFilePosition, BaseFirmwareImage, ELFSection, ESP_IMAGE_MAGIC, ImageSegment } from "./base.js";
+import { ESPError } from "../types/error.js";
+import { ROM } from "../targets/rom.js";
+import { ESP32ROM } from "../targets/esp32.js";
 
 export class ESP32FirmwareImage extends BaseFirmwareImage {
   securePad: string | null = null;
@@ -301,7 +301,7 @@ export class ESP32FirmwareImage extends BaseFirmwareImage {
     [this.hdDrv, this.wpDrv] = this.splitByte(hdConfig);
 
     this.chipId = view.getUint8(4);
-    if (this.chipId !== this.ROM_LOADER.IMAGE_CHIP_ID) {
+    if (this.ROM_LOADER.IMAGE_CHIP_ID !== undefined && this.chipId !== this.ROM_LOADER.IMAGE_CHIP_ID) {
       console.warn(
         `Unexpected chip id in image. Expected ${this.ROM_LOADER.IMAGE_CHIP_ID} but value was ${this.chipId}. ` +
           "Is this image for a different chip model?",
@@ -330,7 +330,7 @@ export class ESP32FirmwareImage extends BaseFirmwareImage {
     view.setUint8(2, this.joinByte(this.dDrv, this.csDrv));
     view.setUint8(3, this.joinByte(this.hdDrv, this.wpDrv));
 
-    view.setUint8(4, this.ROM_LOADER.IMAGE_CHIP_ID);
+    view.setUint8(4, this.ROM_LOADER.IMAGE_CHIP_ID ?? 0);
     view.setUint8(5, this.minRev);
     view.setUint16(6, this.minRevFull, true);
     view.setUint16(8, this.maxRevFull, true);

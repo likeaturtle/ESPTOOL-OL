@@ -1,6 +1,8 @@
 /* global SerialPort, ParityType, FlowControlType */
 
-import { sleep } from "./util";
+import { ESPError } from "./types/error.js";
+import { sleep } from "./util.js";
+
 /**
  * Options for device serialPort.
  * @interface SerialOptions
@@ -50,6 +52,16 @@ export interface SerialOptions {
 }
 
 /**
+ * Optional capability exposed by serial-port implementations which can change
+ * baud rate without closing the port. This is not part of the Web Serial API,
+ * but can be implemented by WebUSB adapters using device-specific control
+ * transfers.
+ */
+export interface BaudRateConfigurablePort extends SerialPort {
+  setBaudRate?: (baudRate: number) => Promise<void>;
+}
+
+/**
  * Wrapper class around Webserial API to communicate with the serial device.
  * @param {typeof import("w3c-web-serial").SerialPort} device - Requested device prompted by the browser.
  *
@@ -96,6 +108,14 @@ class Transport {
     return info.usbVendorId && info.usbProductId
       ? `WebSerial VendorID 0x${info.usbVendorId.toString(16)} ProductID 0x${info.usbProductId.toString(16)}`
       : "";
+  }
+
+  /**
+   * Request the serial device vendor id from SerialPortInfo.
+   * @returns {number | undefined} Return the vendor ID.
+   */
+  getVid(): number | undefined {
+    return this.device.getInfo().usbVendorId;
   }
 
   /**
@@ -260,6 +280,26 @@ class Transport {
     this.buffer = new Uint8Array(0);
   }
 
+  /**
+   * Actively drain the input buffer: wait for in-flight bytes to arrive
+   * (the ROM repeats an unsupported command response 8 times) and discard them.
+   * Flushing alone only drops the bytes already buffered.
+   * @param {number} quietMs Time without new bytes before considering the stream drained
+   * @param {number} maxMs Upper bound on the total wait
+   */
+  async drainInput(quietMs = 100, maxMs = 400) {
+    const deadline = Date.now() + maxMs;
+    let lastLength = -1;
+    while (Date.now() < deadline && this.buffer.length !== lastLength) {
+      lastLength = this.buffer.length;
+      await sleep(quietMs);
+    }
+    if (this.tracing) {
+      this.trace(`Drained ${this.buffer.length} bytes from serial buffer`);
+    }
+    this.flushInput();
+  }
+
   async flushOutput() {
     try {
       if (this.device.writable) {
@@ -338,7 +378,7 @@ class Transport {
         if (this.tracing) {
           this.trace(msg);
         }
-        throw new Error(msg);
+        throw new ESPError(msg);
       }
 
       if (this.tracing) {
@@ -359,7 +399,7 @@ class Transport {
               this.trace(`Remaining data in serial buffer: ${this.hexConvert(remainingData)}`);
             }
             this.detectPanicHandler(new Uint8Array([...readBytes, ...(remainingData || [])]));
-            throw new Error(`Invalid head of packet (0x${byte.toString(16)}): Possible serial noise or corruption.`);
+            throw new ESPError(`Invalid head of packet (0x${byte.toString(16)}): Possible serial noise or corruption.`);
           }
         } else if (isEscaping) {
           isEscaping = false;
@@ -376,7 +416,7 @@ class Transport {
               this.trace(`Remaining data in serial buffer: ${this.hexConvert(remainingData)}`);
             }
             this.detectPanicHandler(new Uint8Array([...readBytes, ...(remainingData || [])]));
-            throw new Error(`Invalid SLIP escape (0xdb, 0x${byte.toString(16)})`);
+            throw new ESPError(`Invalid SLIP escape (0xdb, 0x${byte.toString(16)})`);
           }
         } else if (byte === this.SLIP_ESC) {
           isEscaping = true;
@@ -466,6 +506,20 @@ class Transport {
   }
 
   /**
+   * Set the device signals to given states
+   * # True for IO0=LOW, chip in reset and False IO0=HIGH
+   * @param {boolean} dtr dataTerminalReady (DTS) signal boolean state
+   * @param {boolean} rts requestToSend (RTS) signal boolean state
+   * @param {boolean} breakSignal break signal boolean state
+   */
+  async setSignals(dtr?: boolean, rts?: boolean, breakSignal?: boolean) {
+    if (dtr) {
+      this._DTR_state = dtr;
+    }
+    await this.device.setSignals({ dataTerminalReady: dtr, requestToSend: rts, break: breakSignal });
+  }
+
+  /**
    * Connect to serial device using the Webserial open method.
    * @param {number} baud Number baud rate for serial connection. Default is 115200.
    * @param {typeof import("w3c-web-serial").SerialOptions} serialOptions Serial Options for WebUSB SerialPort class.
@@ -480,6 +534,35 @@ class Transport {
       flowControl: serialOptions?.flowControl,
     });
     this.baudrate = baud;
+  }
+
+  /**
+   * Change the host-side baud rate, preferring an in-place capability when the
+   * serial-port implementation provides one.
+   * @param {number} baud New baud rate.
+   * @param {SerialOptions} serialOptions Options to preserve when a reopen is required.
+   * @returns {boolean} True when the port had to be closed and reopened.
+   */
+  async changeBaudrate(baud: number, serialOptions: SerialOptions = {}): Promise<boolean> {
+    const configurableDevice = this.device as BaudRateConfigurablePort;
+    if (typeof configurableDevice.setBaudRate === "function") {
+      if (this.tracing) {
+        this.trace(`Changing host baud rate to ${baud} in place`);
+      }
+      await configurableDevice.setBaudRate(baud);
+      this.baudrate = baud;
+      return false;
+    }
+
+    if (this.tracing) {
+      this.trace(`Reopening serial port at ${baud} baud`);
+    }
+    await this.disconnect();
+    await sleep(50);
+    await this.connect(baud, serialOptions);
+    await sleep(50);
+    this.readLoop();
+    return true;
   }
 
   /**

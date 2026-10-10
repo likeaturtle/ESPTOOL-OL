@@ -2,14 +2,43 @@
 
 ## Unreleased
 
+## [v0.7.0](https://github.com/espressif/esptool-js/releases/tag/v0.7.0) - 2026-09-21
+
+### Features
+
+- [Add GET_SECURITY_INFO for chip detection](https://github.com/espressif/esptool-js/pull/197)
+- [ESP32-C5 1.2 Revision Magic](https://github.com/espressif/esptool-js/pull/261) Thanks @AWOK559 !
+- [ESP32-S3 ESP32-H2 USB_RAM_BLOCK ](https://github.com/espressif/esptool-js/pull/259)
+- [Add writeFlash file data type validation](https://github.com/espressif/esptool-js/pull/267)
+- [Add .js extension and types for modules re import](https://github.com/espressif/esptool-js/pull/260) Thanks @gronke !
+- [Add setSignals in transport to set signals at the same time](https://github.com/espressif/esptool-js/pull/225)
+
+### Bug fixes
+
+- [fix SPI_REG_BASE and efuse masks for esp32c5 esp32c6 esp32c61](https://github.com/espressif/esptool-js/pull/253)
+- [Drain stale input before sending command](https://github.com/espressif/esptool-js/pull/258) Thanks @gronke !
+- [Fix DevKitC Security Info](https://github.com/espressif/esptool-js/pull/264)
+- [Fix Power on Flash for ESP32-P4](https://github.com/espressif/esptool-js/pull/268)
+- [Add WebUSBSerialPort to fix CH340 change baud rate issues](https://github.com/espressif/esptool-js/pull/265)
+- [ESM Module fixes and remove restoreSignals from connect](https://github.com/espressif/esptool-js/pull/270)
+
 ### Breaking
 
 - `detectFlashSize()` now returns `undefined` when the SPI flash ID cannot be read or mapped, instead of silently defaulting to `"4MB"`. TypeScript callers must handle `undefined`; JavaScript callers no longer always receive a string.
 
+### Added
+
+- `LoaderOptions.romBaudrate` (default 115200). Set it equal to `baudrate` to skip the post-stub port reopen.
+- Serial-port implementations can provide an optional `setBaudRate()` capability to change baud in place. Custom WebUSB transports can use device-specific control transfers and avoid closing the port.
+- `WebUSBSerialPort` CH340/CH341 adapter: in-place baud via vendor request `0x9A`. The TypeScript example has an opt-in **WebUSB (CH340)** checkbox. On desktop OS the kernel `usbserial` driver often owns the device; Android/Chrome OTG is the reliable WebUSB case. See [PR #265](https://github.com/espressif/esptool-js/pull/265)
+
 ### Fixed
 
+- After a baud-rate change, drain leftover serial data and probe the chip. Native Web Serial still requires a port reopen; if this resets the board, fall back to the ROM baud rate and re-run the stub instead of failing with `Invalid head of packet`.
+- `writeFlash` throws if `fileArray[].data` is not a `Uint8Array`, instead of passing a binary string into `deflate` and corrupting the image ([#266](https://github.com/espressif/esptool-js/issues/266)).
 - `writeFlash({ flashSize: "detect" })` resolves the flash size (via `detectFlashSize()`) before the bounds check, so `"detect"` is no longer treated as size `-1` ([#254](https://github.com/espressif/esptool-js/issues/254)). Detection runs for every file in the write, not only a boot image at `BOOTLOADER_FLASH_OFFSET`.
 - ESP32-C6, C5, C61, and H2 use `SPI_REG_BASE = 0x60003000`, matching esptool. Flash ID reads on those chips no longer return `0` ([#217](https://github.com/espressif/esptool-js/issues/217)).
+- ESP32-P4: `postConnect()` now runs `powerOnFlash()`, which was implemented but never called. On ECO6/ECO7 silicon (revisions v3.1 and v3.2) the flash is powered off by default, so the flash ID read returned garbage and the first flash command hung the stub. ECO7 parts with the `DOWNLOAD_MODE_XPD_ON` eFuse programmed release the ROM's flash force-on state instead of repeating the power-up sequence, matching esptool.
 
 ## [v0.6.1](https://github.com/espressif/esptool-js/releases/tag/v0.6.1) - 2026-08-06
 

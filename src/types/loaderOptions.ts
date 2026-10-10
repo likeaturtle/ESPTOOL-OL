@@ -1,6 +1,6 @@
-import { ResetConstructors } from "../reset";
-import { Transport, SerialOptions } from "../webserial";
-import { IEspLoaderTerminal } from "./loaderTerminal";
+import { ResetConstructors } from "../reset.js";
+import { Transport, SerialOptions } from "../webserial.js";
+import { IEspLoaderTerminal } from "./loaderTerminal.js";
 
 /* global SerialPort */
 
@@ -32,6 +32,14 @@ export interface LoaderOptions {
    * @type {number}
    */
   baudrate: number;
+
+  /**
+   * Baud rate used to talk to the ROM bootloader before the stub is running.
+   * Set equal to `baudrate` to skip the port reopen entirely, which avoids
+   * rebooting boards whose EN/IO0 lines are disturbed by reopening the port.
+   * @type {number}
+   */
+  romBaudrate?: number;
 
   /**
    * An optional terminal interface to interact with the loader during the process.
