@@ -109,6 +109,17 @@ function handleFileSelect(evt) {
   reader.readAsArrayBuffer(file);
 }
 
+/**
+ * Get the file input element of a file table row.
+ * The input is wrapped in a `.file-cell` div for vertical alignment, so it is not
+ * necessarily the first child of the cell.
+ * @param {HTMLTableRowElement} row Table row containing the file input
+ * @returns {HTMLInputElement} File input element with the loaded binary attached as `data`
+ */
+function getFileInput(row: HTMLTableRowElement): HTMLInputElement & { data?: Uint8Array } {
+  return row.cells[1].querySelector('input[type="file"]') as HTMLInputElement & { data?: Uint8Array };
+}
+
 const espLoaderTerminal = {
   clean() {
     term.clear();
@@ -569,7 +580,7 @@ function validateProgramInputs() {
     else if (offsetArr.includes(offset)) return t("validate.offsetDuplicate", { row: index });
     else offsetArr.push(offset);
 
-    const fileObj = row.cells[1].childNodes[0];
+    const fileObj = getFileInput(row);
     fileData = fileObj.data;
     if (fileData == null) return t("validate.noFile", { row: index });
   }
@@ -598,7 +609,7 @@ programButton.onclick = async () => {
     const offSetObj = row.cells[0].childNodes[0] as HTMLInputElement;
     const offset = parseInt(offSetObj.value);
 
-    const fileObj = row.cells[1].childNodes[0] as ChildNode & { data: Uint8Array };
+    const fileObj = getFileInput(row);
     const progressBar = row.cells[3].childNodes[0];
 
     progressBar.textContent = "0";
